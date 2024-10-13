@@ -158,9 +158,9 @@ function render_stopwatch(stopwatch: IntervalStopwatch) {
   )!.textContent = `${stopwatch.number_of_series}/${stopwatch.number_of_series_set} `;
 }
 
-// import { InputCounter } from "flowbite";
-// import type { InputCounterOptions, InputCounterInterface } from "flowbite";
-// import type { InstanceOptions } from "flowbite";
+import { InputCounter } from "flowbite";
+import type { InputCounterOptions, InputCounterInterface } from "flowbite";
+import type { InstanceOptions } from "flowbite";
 
 function bind_setting_widgets() {
   // let get_worktime_value = () => {return document.getElementById("worktime-input")};
