@@ -1,0 +1,21 @@
+{
+  "name": "workout_stopwatch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tomasz Kostur",
+  "license": "ISC",
+  "devDependencies": {
+    "pa": "^0.1.1",
+    "parcel": "^2.12.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "flowbite": "^2.5.2"
+  }
+}
