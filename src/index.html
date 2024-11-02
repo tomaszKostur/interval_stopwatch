@@ -19,7 +19,7 @@
             <div id="work_bar">
                 <div class="flex justify-between m-2 p-2">
                     <span class="text-base font-medium text-white">WORK!</span>
-                    <span class="text-sm font-medium text-white">45%</span>
+                    <span id="work_bar_text" class="text-sm font-medium text-white">45%</span>
                 </div>
                 <div class="m-2 p-2">
                     <div class="w-full  rounded-full h-4 bg-gray-400">
@@ -30,7 +30,7 @@
             <div id="pause_bar">
                 <div class="flex justify-between m-2 p-2">
                     <span class="text-base font-medium text-white">REST!</span>
-                    <span class="text-sm font-medium text-white">45%</span>
+                    <span id="pause_bar_text" class="text-sm font-medium text-white">45%</span>
                 </div>
                 <div class="m-2 p-2">
                     <div class="w-full rounded-full h-4 bg-gray-400">
@@ -156,13 +156,13 @@
                         <form class="max-w-xs mx-auto flex items-center flex-col">
                             <label for="seriesnum-input" class="block mb-2 text-sm font-medium text-white text-center">Number of series</label>
                             <div class="relative flex items-center max-w-[8rem]">
-                                <button type="button" id="decrement-series" data-input-counter-decrement="seriesnum-input" class="bg-gray-700 hover:bg-gray-600 border-gray-600  border rounded-s-lg p-3 h-11 focus:ring-gray-700 focus:ring-2 focus:outline-none">
+                                <button type="button" id="decrement-seriesnum" data-input-counter-decrement="seriesnum-input" class="bg-gray-700 hover:bg-gray-600 border-gray-600  border rounded-s-lg p-3 h-11 focus:ring-gray-700 focus:ring-2 focus:outline-none">
                                     <svg class="w-3 h-3 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
                                     </svg>
                                 </button>
                                 <input type="text" id="seriesnum-input" data-input-counter aria-describedby="seriesnum-text-explanation" class="border-x-0 h-11 text-center text-sm block w-full py-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="5" required />
-                                <button type="button" id="increment-series" data-input-counter-increment="seriesnum-input" class="bg-gray-700 hover:bg-gray-600 border-gray-600  border rounded-e-lg p-3 h-11 focus:ring-gray-700 focus:ring-2 focus:outline-none">
+                                <button type="button" id="increment-seriesnum" data-input-counter-increment="seriesnum-input" class="bg-gray-700 hover:bg-gray-600 border-gray-600  border rounded-e-lg p-3 h-11 focus:ring-gray-700 focus:ring-2 focus:outline-none">
                                     <svg class="w-3 h-3 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16" />
                                     </svg>

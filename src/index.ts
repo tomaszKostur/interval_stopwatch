@@ -1,5 +1,6 @@
 const TICK_RATE_MS = 10;
 const GAUGE_SCALE = 0.75; // if 1 represents full circle 0.75 should represent full gauge;
+const CONVENTION_MULTIPLIER = 1000; // transform from inner milliseconds values to displayed seconds;
 
 enum IntervalStopwatchState {
   idle,
@@ -8,6 +9,7 @@ enum IntervalStopwatchState {
   rest,
 }
 
+// INFO: Let's have convention that all values are in milliseconds [ms]
 type IntervalStopwatch = {
   work_time: number;
   work_time_set: number;
@@ -127,68 +129,58 @@ function stopwatch_toggle(stopwatch: IntervalStopwatch) {
 
 function render_stopwatch(stopwatch: IntervalStopwatch) {
   const work_percentage = (stopwatch.work_time / stopwatch.work_time_set) * 100;
-  document
-    .getElementById("work_bar_bar")
-    ?.style.setProperty("width", `${work_percentage}%`);
+  document.getElementById("work_bar_bar")!.style.setProperty("width", `${work_percentage}%`);
+  document.getElementById("work_bar_text")!.textContent = `${stopwatch.work_time/CONVENTION_MULTIPLIER}/${stopwatch.work_time_set/CONVENTION_MULTIPLIER}`;
 
-  const pause_percentage =
-    (stopwatch.pause_time / stopwatch.pause_time_set) * 100;
-  document
-    .getElementById("pause_bar_bar")
-    ?.style.setProperty("width", `${pause_percentage}%`);
+  const pause_percentage = (stopwatch.pause_time / stopwatch.pause_time_set) * 100;
+  document.getElementById("pause_bar_bar")!.style.setProperty("width", `${pause_percentage}%`);
+  document.getElementById("pause_bar_text")!.textContent = `${stopwatch.pause_time/CONVENTION_MULTIPLIER}/${stopwatch.pause_time_set/CONVENTION_MULTIPLIER}`;
 
-  const reps_percentage =
-    (stopwatch.reps_in_set / stopwatch.reps_in_set_set) * 100 * GAUGE_SCALE;
-  document
-    .getElementById("gauge_reps_bar")
-    ?.setAttribute("stroke-dasharray", `${reps_percentage} 100`);
-  document.getElementById(
-    "gauge_reps_text"
-  )!.textContent = `${stopwatch.reps_in_set}/${stopwatch.reps_in_set_set}`;
+  const reps_percentage = (stopwatch.reps_in_set / stopwatch.reps_in_set_set) * 100 * GAUGE_SCALE;
+  document.getElementById("gauge_reps_bar")!.setAttribute("stroke-dasharray", `${reps_percentage} 100`);
+  document.getElementById("gauge_reps_text")!.textContent = `${stopwatch.reps_in_set}/${stopwatch.reps_in_set_set}`;
 
-  const series_percentage =
-    (stopwatch.number_of_series / stopwatch.number_of_series_set) *
-    100 *
-    GAUGE_SCALE;
-  document
-    .getElementById("gauge_series_bar")
-    ?.setAttribute("stroke-dasharray", `${series_percentage} 100`);
-  document.getElementById(
-    "gauge_series_text"
-  )!.textContent = `${stopwatch.number_of_series}/${stopwatch.number_of_series_set} `;
+  const series_percentage = (stopwatch.number_of_series / stopwatch.number_of_series_set) * 100 *  GAUGE_SCALE;
+  document.getElementById("gauge_series_bar")!.setAttribute("stroke-dasharray", `${series_percentage} 100`);
+  document.getElementById("gauge_series_text")!.textContent = `${stopwatch.number_of_series}/${stopwatch.number_of_series_set} `;
 }
 
 import { InputCounter } from "flowbite";
 import type { InputCounterOptions, InputCounterInterface } from "flowbite";
 import type { InstanceOptions } from "flowbite";
 
-function bind_setting_widgets() {
-  // let get_worktime_value = () => {return document.getElementById("worktime-input")};
+function bind_setting_widgets(stopwatch_instance: IntervalStopwatch) {
 
-  // all this elements should be under id="setting_section"
-  // document.getElementById("worktime-input")?.addEventListener("input",  (event) => {console.log(event)});
-  // document.getElementById("set_work_time_form")?.addEventListener("change", (event) => {console.log(event)});
-  // document.getElementById("increment-worktime")?.addEventListener("click", (event) => {console.log(`val: ${get_worktime_value()}`)});
-  //
-  // flowbyte way
-  const $worktime_input = document.getElementById(
-    "worktime-input"
-  ) as HTMLInputElement;
-  const $worktime_increase = document.getElementById("increment-worktime");
-  const $worktime_decrease = document.getElementById("decrement-worktime");
+  bind_setting_widget_to_stopwatch('worktime', stopwatch_instance, "work_time_set", true);
+  bind_setting_widget_to_stopwatch('pausetime', stopwatch_instance, "pause_time_set", true);
+  bind_setting_widget_to_stopwatch('resttime', stopwatch_instance, "rest_time_set", true);
+  bind_setting_widget_to_stopwatch('reps', stopwatch_instance, "reps_in_set_set", false);
+  bind_setting_widget_to_stopwatch('seriesnum', stopwatch_instance, "number_of_series_set", false);
+}
+
+function bind_setting_widget_to_stopwatch(widget_prefix_name: string, stopwatch_instance: IntervalStopwatch, setting_name: keyof IntervalStopwatch, convention_multiply: boolean){
+  const assign_value = () => {
+    console.log(`input field ${widget_prefix_name} value has been incremented`);
+    if(convention_multiply)
+    {stopwatch_instance[setting_name] = parseInt($worktime_input.value) * CONVENTION_MULTIPLIER;}
+    else {stopwatch_instance[setting_name] = parseInt($worktime_input.value);}
+  }
+  const $worktime_input = document.getElementById(`${widget_prefix_name}-input` ) as HTMLInputElement;
+  $worktime_input.addEventListener('change', assign_value);
+  const $worktime_increase = document.getElementById(`increment-${widget_prefix_name}`);
+  const $worktime_decrease = document.getElementById(`decrement-${widget_prefix_name}`);
+
 
   const options: InputCounterOptions = {
     minValue: 0,
     maxValue: null, // infinite
-    onIncrement: () => {
-      console.log("input field value has been incremented");
-    },
-    onDecrement: () => {
-      console.log("input field value has been decremented");
-    },
+
+    onIncrement: assign_value,
+    onDecrement: assign_value,
+    
   };
   const instanceOptions: InstanceOptions = {
-    id: "counter-input-example",
+    id: `${widget_prefix_name}-input`,
     override: true,
   };
   const worktime_input = new InputCounter(
@@ -198,12 +190,13 @@ function bind_setting_widgets() {
     options,
     instanceOptions,
   )
+
 }
 
 function dev_main(): void {
   let stopwatch = stopwatch_init();
   // stopwatch_start(stopwatch);
-  // bind_setting_widgets();
+  bind_setting_widgets(stopwatch);
   document.getElementById("run_button")?.addEventListener("click", () => {
     stopwatch_toggle(stopwatch);
     console.log("sanity");
