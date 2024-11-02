@@ -14,12 +14,13 @@
 <body class="bg-gray-400">
     <main class="flex justify-center h-screen text-white">
         <div class="bg-gray-700 container mx-auto max-w-3xl">
-            <h1 class="m-2 text-center text-white">Interval stopwatch</h1>
-
+            <div class="w-full bg-gray-600">
+                <h1 class="m-2 p-2 text-center text-white font-bold text-xl">Interval stopwatch</h1>
+            </div>
             <div id="work_bar">
                 <div class="flex justify-between m-2 p-2">
                     <span class="text-base font-medium text-white">WORK!</span>
-                    <span id="work_bar_text" class="text-sm font-medium text-white">45%</span>
+                    <span id="work_bar_text" class="mx-2 text-lg font-medium text-white">45%</span>
                 </div>
                 <div class="m-2 p-2">
                     <div class="w-full  rounded-full h-4 bg-gray-400">
@@ -30,7 +31,7 @@
             <div id="pause_bar">
                 <div class="flex justify-between m-2 p-2">
                     <span class="text-base font-medium text-white">REST!</span>
-                    <span id="pause_bar_text" class="text-sm font-medium text-white">45%</span>
+                    <span id="pause_bar_text" class="mx-2 text-lg font-medium text-white">45%</span>
                 </div>
                 <div class="m-2 p-2">
                     <div class="w-full rounded-full h-4 bg-gray-400">
@@ -189,7 +190,7 @@
                 <button id="run_button" type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"> Run/Pause!</button>
                 <button id="reset_button" type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"> Reset</button>
             </div>
-            
+
         </div>
     </main>
 </body>

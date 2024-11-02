@@ -73,7 +73,7 @@ function stopwatch_tick(stopwatch: IntervalStopwatch, delay_ms: number) {
       stopwatch.work_time += delay_ms;
 
       if (stopwatch.work_time >= stopwatch.work_time_set) {
-        if (stopwatch.reps_in_set >= stopwatch.reps_in_set_set -1) {
+        if (stopwatch.reps_in_set >= stopwatch.reps_in_set_set - 1) {
           stopwatch.number_of_series += 1;
           stopwatch.reps_in_set += 1;
           // stopwatch.reps_in_set = 0;
@@ -133,9 +133,9 @@ function stopwatch_toggle(stopwatch: IntervalStopwatch) {
 function render_stopwatch(stopwatch: IntervalStopwatch) {
   const work_percentage = (stopwatch.work_time / stopwatch.work_time_set) * 100;
   document.getElementById("work_bar_bar")!.style.setProperty("width", `${work_percentage}%`);
-  document.getElementById("work_bar_text")!.textContent = `${stopwatch.work_time / CONVENTION_MULTIPLIER}/${
-    stopwatch.work_time_set / CONVENTION_MULTIPLIER
-  }`;
+  document.getElementById("work_bar_text")!.textContent = `${(stopwatch.work_time / CONVENTION_MULTIPLIER).toFixed(
+    1
+  )}/${stopwatch.work_time_set / CONVENTION_MULTIPLIER}`;
 
   const pause_percentage = (stopwatch.pause_time / stopwatch.pause_time_set) * 100;
   const rest_percentage = (stopwatch.rest_time / stopwatch.rest_time_set) * 100;
@@ -143,15 +143,15 @@ function render_stopwatch(stopwatch: IntervalStopwatch) {
   if (stopwatch.state === IntervalStopwatchState.rest) {
     pause_bar_bar.style.setProperty("width", `${rest_percentage}%`);
     pause_bar_bar.classList.replace("bg-yellow-900", "bg-red-600");
-    document.getElementById("pause_bar_text")!.textContent = `${stopwatch.rest_time / CONVENTION_MULTIPLIER}/${
-      stopwatch.rest_time_set / CONVENTION_MULTIPLIER
-    }`;
+    document.getElementById("pause_bar_text")!.textContent = `${(stopwatch.rest_time / CONVENTION_MULTIPLIER).toFixed(
+      1
+    )}/${stopwatch.rest_time_set / CONVENTION_MULTIPLIER}`;
   } else {
     pause_bar_bar.style.setProperty("width", `${pause_percentage}%`);
     pause_bar_bar.classList.replace("bg-red-600", "bg-yellow-900");
-    document.getElementById("pause_bar_text")!.textContent = `${stopwatch.pause_time / CONVENTION_MULTIPLIER}/${
-      stopwatch.pause_time_set / CONVENTION_MULTIPLIER
-    }`;
+    document.getElementById("pause_bar_text")!.textContent = `${(stopwatch.pause_time / CONVENTION_MULTIPLIER).toFixed(
+      1
+    )}/${stopwatch.pause_time_set / CONVENTION_MULTIPLIER}`;
   }
 
   const reps_percentage = (stopwatch.reps_in_set / stopwatch.reps_in_set_set) * 100 * GAUGE_SCALE;
