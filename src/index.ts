@@ -12,14 +12,6 @@ enum IntervalStopwatchState {
   rest,
 }
 
-// State transition recognition but I'm not sure if this is helpfull
-enum IntervalStopwatchTransition {
-  idle_work,
-  work_pause,
-  work_rest,
-  rest_work,
-}
-
 type IntervalStopwatchAudioSettings = {
   start_stop_bell: boolean;
   bell_on_half_rest: boolean;
@@ -56,21 +48,6 @@ function stopwatch_init(): IntervalStopwatch {
     state: IntervalStopwatchState.idle,
   };
   return stopwatch;
-}
-
-function stopwatch_set(
-  stopwatch: IntervalStopwatch,
-  work_time_set: number,
-  pause_time_set: number,
-  rest_time_set: number,
-  reps_in_set_set: number,
-  number_of_series_set: number
-) {
-  stopwatch.work_time_set = work_time_set;
-  stopwatch.pause_time_set = pause_time_set;
-  stopwatch.rest_time_set = rest_time_set;
-  stopwatch.reps_in_set_set = reps_in_set_set;
-  stopwatch.number_of_series_set = number_of_series_set;
 }
 
 function stopwatch_reset(stopwatch: IntervalStopwatch) {
@@ -296,7 +273,6 @@ function bind_setting_widget_to_stopwatch(
   convention_multiply: boolean
 ) {
   const assign_value = () => {
-    // console.log(`input field ${widget_prefix_name} value has been incremented`);
     if (convention_multiply) {
       stopwatch_instance[setting_name] = parseInt($worktime_input.value) * CONVENTION_MULTIPLIER;
     } else {
@@ -348,7 +324,7 @@ function bind_audio_settings_widget(audio_settings: IntervalStopwatchAudioSettin
   });
 }
 
-function dev_main(): void {
+function main(): void {
   let stopwatch = stopwatch_init();
   // stopwatch_start(stopwatch);
   bind_setting_widgets(stopwatch);
@@ -371,10 +347,9 @@ function dev_main(): void {
     stopwatch_tick(stopwatch, TICK_RATE_MS);
     render_stopwatch(stopwatch);
     stopwatch_audio_tick();
-    // console.log(stopwatch.work_time);
   }, TICK_RATE_MS);
 }
 
-dev_main();
+main();
 
 // I think that sound for rounds may be sprinters pistol sound and boxers ring bell;
