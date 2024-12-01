@@ -6,10 +6,11 @@ const GAUGE_SCALE = 0.75; // if 1 represents full circle 0.75 should represent f
 const CONVENTION_MULTIPLIER = 1000; // transform from inner milliseconds values to displayed seconds;
 
 enum IntervalStopwatchState {
-  idle,
+  ready,
   work,
   pause,
   rest,
+  done,
 }
 
 type IntervalStopwatchAudioSettings = {
@@ -31,6 +32,7 @@ type IntervalStopwatch = {
   number_of_series: number;
   number_of_series_set: number;
   state: IntervalStopwatchState;
+  pause: boolean;
 };
 
 function stopwatch_init(): IntervalStopwatch {
@@ -45,7 +47,7 @@ function stopwatch_init(): IntervalStopwatch {
     reps_in_set_set: 7,
     number_of_series: 0,
     number_of_series_set: 5,
-    state: IntervalStopwatchState.idle,
+    state: IntervalStopwatchState.ready,
   };
   return stopwatch;
 }
@@ -56,24 +58,31 @@ function stopwatch_reset(stopwatch: IntervalStopwatch) {
   stopwatch.rest_time = 0;
   stopwatch.reps_in_set = 0;
   stopwatch.number_of_series = 0;
-  stopwatch.state = IntervalStopwatchState.idle;
+  stopwatch.state = IntervalStopwatchState.ready;
 }
 
 function stopwatch_tick(stopwatch: IntervalStopwatch, delay_ms: number) {
   // This function should be executed every time interval is calculated
+  // condition for pause
+  if(stopwatch.pause){
+    return
+  }
+
   switch (stopwatch.state) {
-    case IntervalStopwatchState.idle:
+    case IntervalStopwatchState.ready:
       break;
     case IntervalStopwatchState.work:
       stopwatch.work_time += delay_ms;
 
       if (stopwatch.work_time >= stopwatch.work_time_set) {
-        if(stopwatch.reps_in_set >= stopwatch.reps_in_set_set - 1 && stopwatch.number_of_series >= stopwatch.number_of_series_set -1){
-          stopwatch.number_of_series +=1;
+        if (
+          stopwatch.reps_in_set >= stopwatch.reps_in_set_set - 1 &&
+          stopwatch.number_of_series >= stopwatch.number_of_series_set - 1
+        ) {
+          stopwatch.number_of_series += 1;
           stopwatch.reps_in_set += 1;
-          stopwatch.state = IntervalStopwatchState.idle;
-        }
-        else if (stopwatch.reps_in_set >= stopwatch.reps_in_set_set - 1) {
+          stopwatch.state = IntervalStopwatchState.done;
+        } else if (stopwatch.reps_in_set >= stopwatch.reps_in_set_set - 1) {
           stopwatch.number_of_series += 1;
           stopwatch.reps_in_set += 1;
           // stopwatch.reps_in_set = 0;
@@ -101,9 +110,11 @@ function stopwatch_tick(stopwatch: IntervalStopwatch, delay_ms: number) {
 
       if (stopwatch.rest_time >= stopwatch.rest_time_set) {
         if (stopwatch.number_of_series >= stopwatch.number_of_series_set) {
+          // INFO: this condition should never happen.
+          // TODO: consider to remove
           stopwatch.pause_time = 0; // should not be needed
           stopwatch.work_time = 0;
-          stopwatch.state = IntervalStopwatchState.idle;
+          stopwatch.state = IntervalStopwatchState.done;
         } else {
           stopwatch.reps_in_set = 0;
           stopwatch.rest_time = 0;
@@ -115,20 +126,25 @@ function stopwatch_tick(stopwatch: IntervalStopwatch, delay_ms: number) {
   }
 }
 
-function stopwatch_start(stopwatch: IntervalStopwatch) {
-  stopwatch.state = IntervalStopwatchState.work;
-}
 
-function stopwatch_stop(stopwatch: IntervalStopwatch) {
-  stopwatch.state = IntervalStopwatchState.idle;
-}
 function stopwatch_toggle(stopwatch: IntervalStopwatch) {
-  if (stopwatch.state == IntervalStopwatchState.idle) {
+  if (stopwatch.pause || stopwatch.state === IntervalStopwatchState.ready) {
     stopwatch_start(stopwatch);
   } else {
     stopwatch_stop(stopwatch);
   }
 }
+
+function stopwatch_stop(stopwatch: IntervalStopwatch) {
+  stopwatch.pause = true;
+}
+
+function stopwatch_start(stopwatch: IntervalStopwatch) {
+  if (stopwatch.state === IntervalStopwatchState.ready){
+    stopwatch.state = IntervalStopwatchState.work;
+  }
+  stopwatch.pause = false;
+} 
 
 function audio_frame_stopwatch_control(stopwatch: IntervalStopwatch, audio_settings: IntervalStopwatchAudioSettings) {
   function play_single_bell() {
@@ -165,7 +181,7 @@ function audio_frame_stopwatch_control(stopwatch: IntervalStopwatch, audio_setti
   function audio_frame_tick() {
     if (audio_settings.start_stop_bell) {
       // This is section for standard start stop bell
-      if (previous_stopwatch_state === IntervalStopwatchState.idle && stopwatch.state === IntervalStopwatchState.work) {
+      if (previous_stopwatch_state === IntervalStopwatchState.ready && stopwatch.state === IntervalStopwatchState.work) {
         play_gun_shot();
       } else if (
         previous_stopwatch_state === IntervalStopwatchState.pause &&
@@ -179,7 +195,7 @@ function audio_frame_stopwatch_control(stopwatch: IntervalStopwatch, audio_setti
         play_gun_shot();
       } else if (
         previous_stopwatch_state === IntervalStopwatchState.work &&
-        stopwatch.state === IntervalStopwatchState.idle
+        stopwatch.state === IntervalStopwatchState.done
       ) {
         play_tripple_bell();
       } else if (
@@ -304,7 +320,7 @@ function bind_setting_widget_to_stopwatch(
   );
 }
 
-function bind_audio_settings_widget(audio_settings: IntervalStopwatchAudioSettings){
+function bind_audio_settings_widget(audio_settings: IntervalStopwatchAudioSettings) {
   const start_stop_bell_checkbox = document.getElementById("start_stop_bell_checkbox") as HTMLInputElement;
   start_stop_bell_checkbox.checked = audio_settings.start_stop_bell;
   start_stop_bell_checkbox.addEventListener("change", () => {
@@ -326,7 +342,7 @@ function bind_audio_settings_widget(audio_settings: IntervalStopwatchAudioSettin
 
 function main(): void {
   let stopwatch = stopwatch_init();
-  // stopwatch_start(stopwatch);
+
   bind_setting_widgets(stopwatch);
   document.getElementById("run_button")!.addEventListener("click", () => {
     stopwatch_toggle(stopwatch);
@@ -334,7 +350,6 @@ function main(): void {
   document.getElementById("reset_button")!.addEventListener("click", () => {
     stopwatch_reset(stopwatch);
   });
-
 
   const audio_settings: IntervalStopwatchAudioSettings = {
     start_stop_bell: true,
