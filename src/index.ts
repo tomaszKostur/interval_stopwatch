@@ -296,7 +296,7 @@ function bind_setting_widget_to_stopwatch(
   convention_multiply: boolean
 ) {
   const assign_value = () => {
-    console.log(`input field ${widget_prefix_name} value has been incremented`);
+    // console.log(`input field ${widget_prefix_name} value has been incremented`);
     if (convention_multiply) {
       stopwatch_instance[setting_name] = parseInt($worktime_input.value) * CONVENTION_MULTIPLIER;
     } else {
@@ -328,6 +328,26 @@ function bind_setting_widget_to_stopwatch(
   );
 }
 
+function bind_audio_settings_widget(audio_settings: IntervalStopwatchAudioSettings){
+  const start_stop_bell_checkbox = document.getElementById("start_stop_bell_checkbox") as HTMLInputElement;
+  start_stop_bell_checkbox.checked = audio_settings.start_stop_bell;
+  start_stop_bell_checkbox.addEventListener("change", () => {
+    audio_settings.start_stop_bell = start_stop_bell_checkbox.checked;
+  });
+
+  const countdown_bell_checkbox = document.getElementById("countdown_bell_checkbox") as HTMLInputElement;
+  countdown_bell_checkbox.checked = audio_settings.bell_on_countdown_start;
+  countdown_bell_checkbox.addEventListener("change", () => {
+    audio_settings.bell_on_countdown_start = countdown_bell_checkbox.checked;
+  });
+
+  const half_rest_bell_checkbox = document.getElementById("half_rest_bell_checkbox") as HTMLInputElement;
+  half_rest_bell_checkbox.checked = audio_settings.bell_on_half_rest;
+  half_rest_bell_checkbox.addEventListener("change", () => {
+    audio_settings.bell_on_half_rest = half_rest_bell_checkbox.checked;
+  });
+}
+
 function dev_main(): void {
   let stopwatch = stopwatch_init();
   // stopwatch_start(stopwatch);
@@ -339,11 +359,13 @@ function dev_main(): void {
     stopwatch_reset(stopwatch);
   });
 
+
   const audio_settings: IntervalStopwatchAudioSettings = {
     start_stop_bell: true,
     bell_on_countdown_start: true,
     bell_on_half_rest: true,
   };
+  bind_audio_settings_widget(audio_settings);
   const stopwatch_audio_tick = audio_frame_stopwatch_control(stopwatch, audio_settings);
   setInterval(() => {
     stopwatch_tick(stopwatch, TICK_RATE_MS);
