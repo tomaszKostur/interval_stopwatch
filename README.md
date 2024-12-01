@@ -20,5 +20,3 @@ touch .postcssrc
 
 npx parcel src/index.html
 
-### I had a problem with including assets into parcel dist directory
-npm install @parcel/transformer-raw --save-dev
