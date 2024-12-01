@@ -9,6 +9,7 @@
   "author": "Tomasz Kostur",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^22.10.1",
     "pa": "^0.1.1",
     "parcel": "^2.12.0",
     "postcss": "^8.4.47",
@@ -18,5 +19,4 @@
   "dependencies": {
     "flowbite": "^2.5.2"
   }
-
 }
