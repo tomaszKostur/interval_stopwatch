@@ -1,3 +1,7 @@
+// const single_bell_path = require('./assets/single_bell.wav');
+// import 
+
+
 const TICK_RATE_MS = 10;
 const GAUGE_SCALE = 0.75; // if 1 represents full circle 0.75 should represent full gauge;
 const CONVENTION_MULTIPLIER = 1000; // transform from inner milliseconds values to displayed seconds;
@@ -7,6 +11,14 @@ enum IntervalStopwatchState {
   work,
   pause,
   rest,
+}
+
+// State transition recognition but I'm not sure if this is helpfull
+enum IntervalStopwatchTransition {
+  idle_work,
+  work_pause,
+  work_rest,
+  rest_work,
 }
 
 // INFO: Let's have convention that all values are in milliseconds [ms]
@@ -66,6 +78,7 @@ function stopwatch_reset(stopwatch: IntervalStopwatch) {
 }
 
 function stopwatch_tick(stopwatch: IntervalStopwatch, delay_ms: number) {
+  // This function should be executed every time interval is calculated
   switch (stopwatch.state) {
     case IntervalStopwatchState.idle:
       break;
@@ -130,7 +143,29 @@ function stopwatch_toggle(stopwatch: IntervalStopwatch) {
   }
 }
 
+function audio_frame_stopwatch_controll(stopwatch: IntervalStopwatch) {
+  function play_single_bell() {
+    const single_bell_path = require("url:./assets/single_bell.wav");
+    const audio = new Audio(single_bell_path);
+    audio.play();
+    console.log('from play single bell');
+  }
+  let previous_stopwatch_state = stopwatch.state;
+  function audio_frame_tick() {
+    if(stopwatch.state === IntervalStopwatchState.work && previous_stopwatch_state === IntervalStopwatchState.idle ){
+      play_single_bell();
+    }
+    if(stopwatch.state === IntervalStopwatchState.work && previous_stopwatch_state === IntervalStopwatchState.pause ) {
+      play_single_bell();
+    }
+    previous_stopwatch_state = stopwatch.state
+  }
+  return audio_frame_tick
+}
+
 function render_stopwatch(stopwatch: IntervalStopwatch) {
+  const REST_BAR_PAUSE_COLOR = "bg-yellow-300"; // WARNING: this have to be aligned to what is in HTML
+  const REST_BAR_REST_COLOR = "bg-red-600";
   const work_percentage = (stopwatch.work_time / stopwatch.work_time_set) * 100;
   document.getElementById("work_bar_bar")!.style.setProperty("width", `${work_percentage}%`);
   document.getElementById("work_bar_text")!.textContent = `${(stopwatch.work_time / CONVENTION_MULTIPLIER).toFixed(
@@ -142,13 +177,13 @@ function render_stopwatch(stopwatch: IntervalStopwatch) {
   const pause_bar_bar = document.getElementById("pause_bar_bar")!;
   if (stopwatch.state === IntervalStopwatchState.rest) {
     pause_bar_bar.style.setProperty("width", `${rest_percentage}%`);
-    pause_bar_bar.classList.replace("bg-yellow-900", "bg-red-600");
+    pause_bar_bar.classList.replace(REST_BAR_PAUSE_COLOR, REST_BAR_REST_COLOR);
     document.getElementById("pause_bar_text")!.textContent = `${(stopwatch.rest_time / CONVENTION_MULTIPLIER).toFixed(
       1
     )}/${stopwatch.rest_time_set / CONVENTION_MULTIPLIER}`;
   } else {
     pause_bar_bar.style.setProperty("width", `${pause_percentage}%`);
-    pause_bar_bar.classList.replace("bg-red-600", "bg-yellow-900");
+    pause_bar_bar.classList.replace(REST_BAR_REST_COLOR, REST_BAR_PAUSE_COLOR);
     document.getElementById("pause_bar_text")!.textContent = `${(stopwatch.pause_time / CONVENTION_MULTIPLIER).toFixed(
       1
     )}/${stopwatch.pause_time_set / CONVENTION_MULTIPLIER}`;
@@ -227,9 +262,14 @@ function dev_main(): void {
     stopwatch_reset(stopwatch);
   });
 
+
+
+
+  const stopwatch_audio_tick = audio_frame_stopwatch_controll(stopwatch);
   setInterval(() => {
     stopwatch_tick(stopwatch, TICK_RATE_MS);
     render_stopwatch(stopwatch);
+    stopwatch_audio_tick();
     // console.log(stopwatch.work_time);
   }, TICK_RATE_MS);
 }
@@ -237,3 +277,11 @@ function dev_main(): void {
 dev_main();
 
 // I think that sound for rounds may be sprinters pistol sound and boxers ring bell;
+// function devdev(){
+//   {
+//     // const audio = new Audio('./public/single_bell.wav');
+//     const audio = new Audio('public/gun-shots-from-a-distance-7-96391.mp3');
+//     audio.play();
+//     console.log('from play single bell');
+//   }
+// }
