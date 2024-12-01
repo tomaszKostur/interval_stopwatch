@@ -1,6 +1,5 @@
 // const single_bell_path = require('./assets/single_bell.wav');
-// import 
-
+// import
 
 const TICK_RATE_MS = 10;
 const GAUGE_SCALE = 0.75; // if 1 represents full circle 0.75 should represent full gauge;
@@ -20,6 +19,12 @@ enum IntervalStopwatchTransition {
   work_rest,
   rest_work,
 }
+
+type IntervalStopwatchAudioSettings = {
+  start_stop_bell: boolean;
+  bell_on_half_rest: boolean;
+  bell_on_countdown_start: boolean;
+};
 
 // INFO: Let's have convention that all values are in milliseconds [ms]
 type IntervalStopwatch = {
@@ -86,7 +91,12 @@ function stopwatch_tick(stopwatch: IntervalStopwatch, delay_ms: number) {
       stopwatch.work_time += delay_ms;
 
       if (stopwatch.work_time >= stopwatch.work_time_set) {
-        if (stopwatch.reps_in_set >= stopwatch.reps_in_set_set - 1) {
+        if(stopwatch.reps_in_set >= stopwatch.reps_in_set_set - 1 && stopwatch.number_of_series >= stopwatch.number_of_series_set -1){
+          stopwatch.number_of_series +=1;
+          stopwatch.reps_in_set += 1;
+          stopwatch.state = IntervalStopwatchState.idle;
+        }
+        else if (stopwatch.reps_in_set >= stopwatch.reps_in_set_set - 1) {
           stopwatch.number_of_series += 1;
           stopwatch.reps_in_set += 1;
           // stopwatch.reps_in_set = 0;
@@ -143,24 +153,91 @@ function stopwatch_toggle(stopwatch: IntervalStopwatch) {
   }
 }
 
-function audio_frame_stopwatch_controll(stopwatch: IntervalStopwatch) {
+function audio_frame_stopwatch_control(stopwatch: IntervalStopwatch, audio_settings: IntervalStopwatchAudioSettings) {
   function play_single_bell() {
     const single_bell_path = require("url:./assets/single_bell.wav");
     const audio = new Audio(single_bell_path);
     audio.play();
-    console.log('from play single bell');
   }
+
+  function play_double_bell() {
+    const single_bell_path = require("url:./assets/double_bell.wav");
+    const audio = new Audio(single_bell_path);
+    audio.play();
+  }
+
+  function play_tripple_bell() {
+    const single_bell_path = require("url:./assets/triple_bell.wav");
+    const audio = new Audio(single_bell_path);
+    audio.play();
+  }
+
+  function play_gun_shot() {
+    const single_bell_path = require("url:./assets/gun-shots-from-a-distance.mp3");
+    const audio = new Audio(single_bell_path);
+    audio.play();
+  }
+
+  function play_buzzer() {
+    const single_bell_path = require("url:./assets/mixkit-system-beep-buzzer.wav");
+    const audio = new Audio(single_bell_path);
+    audio.play();
+  }
+
   let previous_stopwatch_state = stopwatch.state;
   function audio_frame_tick() {
-    if(stopwatch.state === IntervalStopwatchState.work && previous_stopwatch_state === IntervalStopwatchState.idle ){
-      play_single_bell();
+    if (audio_settings.start_stop_bell) {
+      // This is section for standard start stop bell
+      if (previous_stopwatch_state === IntervalStopwatchState.idle && stopwatch.state === IntervalStopwatchState.work) {
+        play_gun_shot();
+      } else if (
+        previous_stopwatch_state === IntervalStopwatchState.pause &&
+        stopwatch.state === IntervalStopwatchState.work
+      ) {
+        play_gun_shot();
+      } else if (
+        previous_stopwatch_state === IntervalStopwatchState.rest &&
+        stopwatch.state === IntervalStopwatchState.work
+      ) {
+        play_gun_shot();
+      } else if (
+        previous_stopwatch_state === IntervalStopwatchState.work &&
+        stopwatch.state === IntervalStopwatchState.idle
+      ) {
+        play_tripple_bell();
+      } else if (
+        previous_stopwatch_state === IntervalStopwatchState.work &&
+        stopwatch.state === IntervalStopwatchState.pause
+      ) {
+        play_single_bell();
+      } else if (
+        previous_stopwatch_state === IntervalStopwatchState.work &&
+        stopwatch.state === IntervalStopwatchState.rest
+      ) {
+        play_double_bell();
+      }
     }
-    if(stopwatch.state === IntervalStopwatchState.work && previous_stopwatch_state === IntervalStopwatchState.pause ) {
-      play_single_bell();
+    if (audio_settings.bell_on_half_rest) {
+      if (stopwatch.state === IntervalStopwatchState.rest && stopwatch.rest_time === stopwatch.rest_time_set / 2) {
+        // this condition is good enough but WARNING: needs to be aligned with TICK_RATE_MS to ensure exact value
+        play_double_bell();
+      }
     }
-    previous_stopwatch_state = stopwatch.state
+    if (audio_settings.bell_on_countdown_start) {
+      if (stopwatch.state === IntervalStopwatchState.rest) {
+        if (
+          stopwatch.rest_time === stopwatch.rest_time_set - 3 * CONVENTION_MULTIPLIER ||
+          stopwatch.rest_time === stopwatch.rest_time_set - 2 * CONVENTION_MULTIPLIER ||
+          stopwatch.rest_time === stopwatch.rest_time_set - 1 * CONVENTION_MULTIPLIER
+        ) {
+          play_buzzer();
+        }
+      }
+    }
+
+    previous_stopwatch_state = stopwatch.state;
   }
-  return audio_frame_tick
+  return audio_frame_tick;
 }
 
 function render_stopwatch(stopwatch: IntervalStopwatch) {
@@ -262,10 +339,12 @@ function dev_main(): void {
     stopwatch_reset(stopwatch);
   });
 
-
-
-
-  const stopwatch_audio_tick = audio_frame_stopwatch_controll(stopwatch);
+  const audio_settings: IntervalStopwatchAudioSettings = {
+    start_stop_bell: true,
+    bell_on_countdown_start: true,
+    bell_on_half_rest: true,
+  };
+  const stopwatch_audio_tick = audio_frame_stopwatch_control(stopwatch, audio_settings);
   setInterval(() => {
     stopwatch_tick(stopwatch, TICK_RATE_MS);
     render_stopwatch(stopwatch);
@@ -277,11 +356,3 @@ function dev_main(): void {
 dev_main();
 
 // I think that sound for rounds may be sprinters pistol sound and boxers ring bell;
-// function devdev(){
-//   {
-//     // const audio = new Audio('./public/single_bell.wav');
-//     const audio = new Audio('public/gun-shots-from-a-distance-7-96391.mp3');
-//     audio.play();
-//     console.log('from play single bell');
-//   }
-// }
