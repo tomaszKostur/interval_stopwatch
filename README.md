@@ -20,3 +20,11 @@ touch .postcssrc
 
 npx parcel src/index.html
 
+######
+TODO:
+* Initial countdown
+* create favicon.ico
+* configure nginx to right path /interval_stopwartch instead of /
+* Buy me a coffee button
+* create presets
+
