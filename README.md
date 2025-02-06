@@ -17,8 +17,11 @@ touch .postcssrc
 # add "./node_modules/flowbite/**/*.js" to tailwind.config.js content
 
 #####
-
+# to run dev server
 npx parcel src/index.html
+
+# to create prod release
+./create_release.sh
 
 ######
 TODO:

@@ -1,0 +1,6 @@
+services:
+    interval_stopwatch:
+        build:
+            dockerfile: "nginx_release.dockerfile"
+        ports:
+        - "80:80"
