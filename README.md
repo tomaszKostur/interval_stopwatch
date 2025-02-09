@@ -26,8 +26,8 @@ npx parcel src/index.html
 ######
 TODO:
 * Initial countdown
-* create favicon.ico
-* configure nginx to right path /interval_stopwartch instead of /
-* Buy me a coffee button
+* create favicon.ico - ok
+* configure nginx to right path /interval_stopwartch instead of / - ok
+* Buy me a coffee button - ok
 * create presets
 
