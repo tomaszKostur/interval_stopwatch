@@ -4,6 +4,7 @@
 const TICK_RATE_MS = 10;
 const GAUGE_SCALE = 0.75; // if 1 represents full circle 0.75 should represent full gauge;
 const CONVENTION_MULTIPLIER = 1000; // transform from inner milliseconds values to displayed seconds;
+const USER_PAUSE_DELAY = 3*CONVENTION_MULTIPLIER;
 
 enum IntervalStopwatchState {
   ready,
@@ -32,7 +33,9 @@ type IntervalStopwatch = {
   number_of_series: number;
   number_of_series_set: number;
   state: IntervalStopwatchState;
-  pause: boolean;
+  user_pause: boolean;
+  user_pause_delay: number;
+  user_pause_delay_set: number;
 };
 
 function stopwatch_init(): IntervalStopwatch {
@@ -48,6 +51,9 @@ function stopwatch_init(): IntervalStopwatch {
     number_of_series: 0,
     number_of_series_set: 5,
     state: IntervalStopwatchState.ready,
+    user_pause: false,
+    user_pause_delay: -1, // -1 is disabled state, its close enough
+    user_pause_delay_set: USER_PAUSE_DELAY,
   };
   return stopwatch;
 }
@@ -63,9 +69,16 @@ function stopwatch_reset(stopwatch: IntervalStopwatch) {
 
 function stopwatch_tick(stopwatch: IntervalStopwatch, delay_ms: number) {
   // This function should be executed every time interval is calculated
-  // condition for pause
-  if(stopwatch.pause){
+  // condition for user_pause
+  if(stopwatch.user_pause){
+      return
+  }
+  if(stopwatch.user_pause_delay >=0 && stopwatch.user_pause_delay < stopwatch.user_pause_delay_set){
+    stopwatch.user_pause_delay += delay_ms;
     return
+  } else {
+    // Disable delay, and move on
+    stopwatch.user_pause_delay = -1;
   }
 
   switch (stopwatch.state) {
@@ -128,7 +141,7 @@ function stopwatch_tick(stopwatch: IntervalStopwatch, delay_ms: number) {
 
 
 function stopwatch_toggle(stopwatch: IntervalStopwatch) {
-  if (stopwatch.pause || stopwatch.state === IntervalStopwatchState.ready) {
+  if (stopwatch.user_pause || stopwatch.state === IntervalStopwatchState.ready) {
     stopwatch_start(stopwatch);
   } else {
     stopwatch_stop(stopwatch);
@@ -136,14 +149,16 @@ function stopwatch_toggle(stopwatch: IntervalStopwatch) {
 }
 
 function stopwatch_stop(stopwatch: IntervalStopwatch) {
-  stopwatch.pause = true;
+  stopwatch.user_pause = true;
 }
 
 function stopwatch_start(stopwatch: IntervalStopwatch) {
   if (stopwatch.state === IntervalStopwatchState.ready){
     stopwatch.state = IntervalStopwatchState.work;
   }
-  stopwatch.pause = false;
+  stopwatch.user_pause = false;
+  // Reset delay to trigger countdown
+  stopwatch.user_pause_delay = 0;
 } 
 
 function audio_frame_stopwatch_control(stopwatch: IntervalStopwatch, audio_settings: IntervalStopwatchAudioSettings) {
@@ -181,7 +196,12 @@ function audio_frame_stopwatch_control(stopwatch: IntervalStopwatch, audio_setti
   function audio_frame_tick() {
     if (audio_settings.start_stop_bell) {
       // This is section for standard start stop bell
-      if (previous_stopwatch_state === IntervalStopwatchState.ready && stopwatch.state === IntervalStopwatchState.work) {
+      // WARNING:
+      // Because of user pause delay implementation, instead of change state here
+      // play gun as user delay countdown stops
+      // Maybe it would be better to include the user countdown in IntervalStopwatchState
+      // if (previous_stopwatch_state === IntervalStopwatchState.ready && stopwatch.state === IntervalStopwatchState.work) {
+      if (stopwatch.user_pause_delay === stopwatch.user_pause_delay_set) {
         play_gun_shot();
       } else if (
         previous_stopwatch_state === IntervalStopwatchState.pause &&
@@ -268,6 +288,9 @@ function render_stopwatch(stopwatch: IntervalStopwatch) {
   document.getElementById(
     "gauge_series_text"
   )!.textContent = `${stopwatch.number_of_series}/${stopwatch.number_of_series_set} `;
+
+  const user_pause_delay_seconds = stopwatch.user_pause_delay === -1 ? '': `(${((stopwatch.user_pause_delay_set-stopwatch.user_pause_delay)/CONVENTION_MULTIPLIER).toFixed(0)})`;
+  document.getElementById("run_delay_counter")!.textContent = `${user_pause_delay_seconds}`;
 }
 
 import { InputCounter } from "flowbite";
