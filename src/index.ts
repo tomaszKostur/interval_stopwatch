@@ -4,7 +4,36 @@
 const TICK_RATE_MS = 10;
 const GAUGE_SCALE = 0.75; // if 1 represents full circle 0.75 should represent full gauge;
 const CONVENTION_MULTIPLIER = 1000; // transform from inner milliseconds values to displayed seconds;
-const USER_PAUSE_DELAY = 3*CONVENTION_MULTIPLIER;
+const USER_PAUSE_DELAY = 2*CONVENTION_MULTIPLIER;
+
+const STOPWATCH_PRESETS: Record<string, Partial<Record<keyof IntervalStopwatch, number>>> = {
+  'hangboard_default': {'work_time_set': 7000, 'pause_time_set': 3000, 'rest_time_set': 180000, 'reps_in_set_set': 7, 'number_of_series_set': 5},
+  'hangboard_power': {'work_time_set': 10000, 'pause_time_set': 20000, 'rest_time_set': 180000, 'reps_in_set_set': 2, 'number_of_series_set': 5},
+  '4-way-plank': {'work_time_set': 30000, 'pause_time_set': 2000, 'rest_time_set': 120000, 'reps_in_set_set': 4, 'number_of_series_set': 3},
+}
+
+function create_preset_menu(stopwatch: IntervalStopwatch) {
+  const preset_ul = document.getElementById("preset_dropdown_ul")!;
+  Object.keys(STOPWATCH_PRESETS).forEach(preset_name => {
+    const li = document.createElement('li');
+    li.classList.add("block", "px-4", "py-2", "hover:bg-gray-100", "dark:hover:bg-gray-500", "dark:hover:text-white");
+    li.textContent = preset_name;
+    li.addEventListener("click", () => {load_preset(preset_name, stopwatch)});
+    preset_ul.appendChild(li);
+  });
+}
+
+function load_preset(preset_name:string, stopwatch: IntervalStopwatch) {
+  const preset_params = STOPWATCH_PRESETS[preset_name];
+  // Looks like In TypeScript, Object.entries() always returns an array of [string, any][], even if the input object is strongly typed.
+  // So I have to repeat types inside .forEach. :(  stopwatch[key as keyof IntervalStopwatch] = value as never;
+  Object.entries(preset_params).forEach(
+    ([key, value]) => {
+      stopwatch[key as keyof IntervalStopwatch] = value as never;
+    }
+  );
+  render_stopwatch(stopwatch);
+}
 
 enum IntervalStopwatchState {
   ready,
@@ -289,6 +318,14 @@ function render_stopwatch(stopwatch: IntervalStopwatch) {
     "gauge_series_text"
   )!.textContent = `${stopwatch.number_of_series}/${stopwatch.number_of_series_set} `;
 
+  // settings section
+  (document.getElementById('worktime-input') as HTMLInputElement).value = (stopwatch.work_time_set/CONVENTION_MULTIPLIER).toFixed(0);
+  (document.getElementById('pausetime-input') as HTMLInputElement).value = (stopwatch.pause_time_set/CONVENTION_MULTIPLIER).toFixed(0);
+  (document.getElementById('resttime-input') as HTMLInputElement).value = (stopwatch.rest_time_set/CONVENTION_MULTIPLIER).toFixed(0);
+  (document.getElementById('reps-input') as HTMLInputElement).value = (stopwatch.reps_in_set_set).toString();
+  (document.getElementById('seriesnum-input') as HTMLInputElement).value = (stopwatch.number_of_series_set).toString();
+
+  // user_pause_delay section
   const user_pause_delay_seconds = stopwatch.user_pause_delay === -1 ? '': `(${((stopwatch.user_pause_delay_set-stopwatch.user_pause_delay)/CONVENTION_MULTIPLIER).toFixed(0)})`;
   document.getElementById("run_delay_counter")!.textContent = `${user_pause_delay_seconds}`;
 }
@@ -313,9 +350,9 @@ function bind_setting_widget_to_stopwatch(
 ) {
   const assign_value = () => {
     if (convention_multiply) {
-      stopwatch_instance[setting_name] = parseInt($worktime_input.value) * CONVENTION_MULTIPLIER;
+      stopwatch_instance[setting_name] = parseInt($worktime_input.value) * CONVENTION_MULTIPLIER as never;
     } else {
-      stopwatch_instance[setting_name] = parseInt($worktime_input.value);
+      stopwatch_instance[setting_name] = parseInt($worktime_input.value) as never;
     }
   };
   const $worktime_input = document.getElementById(`${widget_prefix_name}-input`) as HTMLInputElement;
@@ -343,6 +380,7 @@ function bind_setting_widget_to_stopwatch(
   );
 }
 
+
 function bind_audio_settings_widget(audio_settings: IntervalStopwatchAudioSettings) {
   const start_stop_bell_checkbox = document.getElementById("start_stop_bell_checkbox") as HTMLInputElement;
   start_stop_bell_checkbox.checked = audio_settings.start_stop_bell;
@@ -365,6 +403,7 @@ function bind_audio_settings_widget(audio_settings: IntervalStopwatchAudioSettin
 
 function main(): void {
   let stopwatch = stopwatch_init();
+  create_preset_menu(stopwatch);
 
   bind_setting_widgets(stopwatch);
   document.getElementById("run_button")!.addEventListener("click", () => {
