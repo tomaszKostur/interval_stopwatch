@@ -18,8 +18,8 @@ services:
         to:
           - global: true
             ip: myendpointa
-      - port: 20
-        as: 20
+      - port: 22
+        as: 22
         to:
           - global: true
             ip: myendpointa
