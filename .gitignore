@@ -1,4 +1,5 @@
 node_modules
 dist
 prod_dist
+prod_dist_root_domain
 .parcel-cache

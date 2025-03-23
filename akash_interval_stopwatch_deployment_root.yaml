@@ -1,0 +1,49 @@
+---
+version: "2.0"
+services:
+  nginx-ssl:
+    image: tomaszkostur/hardwired:interval_stopwatch_root_domain
+    credentials:
+      host: docker.io
+      username: tomasz.kostur@gmail.com
+      password: $PASSWORD
+    expose:
+      - port: 80
+        as: 80
+        to:
+          - global: true
+            ip: myendpointa
+      - port: 443
+        as: 443
+        to:
+          - global: true
+            ip: myendpointa
+      - port: 20
+        as: 20
+        to:
+          - global: true
+            ip: myendpointa
+profiles:
+  compute:
+    nginx-ssl:
+      resources:
+        cpu:
+          units: 2
+        memory:
+          size: 2Gi
+        storage:
+          - size: 5Gi
+  placement:
+    dcloud:
+      pricing:
+        nginx-ssl:
+          denom: uakt
+          amount: 1000
+deployment:
+  nginx-ssl:
+    dcloud:
+      profile: nginx-ssl
+      count: 1
+endpoints:
+  myendpointa:
+    kind: ip
