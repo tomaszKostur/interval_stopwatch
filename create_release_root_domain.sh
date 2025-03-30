@@ -7,3 +7,4 @@ docker tag interval_stopwatch:1.0.0-root tomaszkostur/hardwired:interval_stopwat
 docker push tomaszkostur/hardwired:interval_stopwatch_root_domain
 
 # certbot --nginx -d $DOMAIN --non-interactive --agree-tos --register-unsafely-without-email;
+# certbot --nginx -d intervalstopwatch.online --non-interactive --agree-tos --register-unsafely-without-email;
