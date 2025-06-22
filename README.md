@@ -25,9 +25,11 @@ npx parcel src/index.html
 
 ######
 TODO:
-* Initial countdown
+* Initial countdown -  ok
 * create favicon.ico - ok
 * configure nginx to right path /interval_stopwartch instead of / - ok
 * Buy me a coffee button - ok
-* create presets
+* create presets - ok
+* for some reason I cant hear sound in tauri app
+* even more funny is that on adnroid dev everythink seems to be ok - i need to check forreal app
 
